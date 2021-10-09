@@ -27,4 +27,4 @@ jobs:
 
       # Runs a single command using the runners shell
       - name: hw2 C-1
-        run: ./build-linux.sh <unzipped linux dir> tinyconfig 
+        run: echo $(git rev-parse --short "$GITHUB_SHA")
