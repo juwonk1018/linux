@@ -12,8 +12,8 @@ description: |
   and CEC.
 
   These DT bindings follow the Synopsys DWC HDMI TX bindings defined
-  in bridge/synopsys,dw-hdmi.yaml with the following device-specific
-  properties.
+  in Documentation/devicetree/bindings/display/bridge/dw_hdmi.txt with
+  the following device-specific properties.
 
 maintainers:
   - Chen-Yu Tsai <wens@csie.org>
@@ -46,6 +46,7 @@ properties:
 
   clocks:
     minItems: 3
+    maxItems: 6
     items:
       - description: Bus Clock
       - description: Register Clock
@@ -56,6 +57,7 @@ properties:
 
   clock-names:
     minItems: 3
+    maxItems: 6
     items:
       - const: iahb
       - const: isfr
@@ -66,12 +68,14 @@ properties:
 
   resets:
     minItems: 1
+    maxItems: 2
     items:
       - description: HDMI Controller Reset
       - description: HDCP Reset
 
   reset-names:
     minItems: 1
+    maxItems: 2
     items:
       - const: ctrl
       - const: hdcp

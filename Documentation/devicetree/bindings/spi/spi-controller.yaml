@@ -79,7 +79,22 @@ properties:
     description:
       The SPI controller acts as a slave, instead of a master.
 
-  slave:
+allOf:
+  - if:
+      not:
+        required:
+          - spi-slave
+    then:
+      properties:
+        "#address-cells":
+          const: 1
+    else:
+      properties:
+        "#address-cells":
+          const: 0
+
+patternProperties:
+  "^slave$":
     type: object
 
     properties:
@@ -90,7 +105,6 @@ properties:
     required:
       - compatible
 
-patternProperties:
   "^.*@[0-9a-f]+$":
     type: object
 
@@ -100,11 +114,8 @@ patternProperties:
           Compatible of the SPI device.
 
       reg:
-        minItems: 1
-        maxItems: 256
-        items:
-          minimum: 0
-          maximum: 256
+        minimum: 0
+        maximum: 256
         description:
           Chip select used by the device.
 
@@ -166,41 +177,26 @@ patternProperties:
       - compatible
       - reg
 
-allOf:
-  - if:
-      not:
-        required:
-          - spi-slave
-    then:
-      properties:
-        "#address-cells":
-          const: 1
-    else:
-      properties:
-        "#address-cells":
-          const: 0
-
 additionalProperties: true
 
 examples:
   - |
-    spi@80010000 {
+    spi@f00 {
         #address-cells = <1>;
         #size-cells = <0>;
-        compatible = "fsl,imx28-spi";
-        reg = <0x80010000 0x2000>;
-        interrupts = <96>;
-        dmas = <&dma_apbh 0>;
-        dma-names = "rx-tx";
+        compatible = "fsl,mpc5200b-spi","fsl,mpc5200-spi";
+        reg = <0xf00 0x20>;
+        interrupts = <2 13 0 2 14 0>;
+        interrupt-parent = <&mpc5200_pic>;
 
-        display@0 {
-            compatible = "lg,lg4573";
+        ethernet-switch@0 {
+            compatible = "micrel,ks8995m";
             spi-max-frequency = <1000000>;
             reg = <0>;
         };
 
-        sensor@1 {
-            compatible = "bosch,bme680";
+        codec@1 {
+            compatible = "ti,tlv320aic26";
             spi-max-frequency = <100000>;
             reg = <1>;
         };

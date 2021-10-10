@@ -174,4 +174,4 @@ References
     referenced 2016-10-04.
 
 [7] _DSD Device Properties Usage Rules.
-    Documentation/firmware-guide/acpi/DSD-properties-rules.rst
+    :doc:`../DSD-properties-rules`

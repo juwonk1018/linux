@@ -20,14 +20,8 @@
 #endif
 #include <asm/kasan_def.h>
 
-/*
- * PAGE_OFFSET: the virtual address of the start of lowmem, memory above
- *   the virtual address range for userspace.
- * KERNEL_OFFSET: the virtual address of the start of the kernel image.
- *   we may further offset this with TEXT_OFFSET in practice.
- */
+/* PAGE_OFFSET - the virtual address of the start of the kernel image */
 #define PAGE_OFFSET		UL(CONFIG_PAGE_OFFSET)
-#define KERNEL_OFFSET		(PAGE_OFFSET)
 
 #ifdef CONFIG_MMU
 
@@ -156,14 +150,22 @@ extern unsigned long vectors_base;
  */
 #define PLAT_PHYS_OFFSET	UL(CONFIG_PHYS_OFFSET)
 
-#ifndef __ASSEMBLY__
-
+#ifdef CONFIG_XIP_KERNEL
 /*
- * Physical start and end address of the kernel sections. These addresses are
- * 2MB-aligned to match the section mappings placed over the kernel.
+ * When referencing data in RAM from the XIP region in a relative manner
+ * with the MMU off, we need the relative offset between the two physical
+ * addresses.  The macro below achieves this, which is:
+ *    __pa(v_data) - __xip_pa(v_text)
  */
-extern u32 kernel_sec_start;
-extern u32 kernel_sec_end;
+#define PHYS_RELATIVE(v_data, v_text) \
+	(((v_data) - PAGE_OFFSET + PLAT_PHYS_OFFSET) - \
+	 ((v_text) - XIP_VIRT_ADDR(CONFIG_XIP_PHYS_ADDR) + \
+          CONFIG_XIP_PHYS_ADDR))
+#else
+#define PHYS_RELATIVE(v_data, v_text) ((v_data) - (v_text))
+#endif
+
+#ifndef __ASSEMBLY__
 
 /*
  * Physical vs virtual RAM address space conversion.  These are

@@ -3,9 +3,11 @@
 #define __ASM_ALTERNATIVE_MACROS_H
 
 #include <asm/cpucaps.h>
-#include <asm/insn-def.h>
 
 #define ARM64_CB_PATCH ARM64_NCAPS
+
+/* A64 instructions are always 32 bits. */
+#define	AARCH64_INSN_SIZE		4
 
 #ifndef __ASSEMBLY__
 
@@ -95,9 +97,9 @@
 	.popsection
 	.subsection 1
 663:	\insn2
-664:	.org	. - (664b-663b) + (662b-661b)
+664:	.previous
+	.org	. - (664b-663b) + (662b-661b)
 	.org	. - (662b-661b) + (664b-663b)
-	.previous
 	.endif
 .endm
 
@@ -167,11 +169,11 @@
  */
 .macro alternative_endif
 664:
-	.org	. - (664b-663b) + (662b-661b)
-	.org	. - (662b-661b) + (664b-663b)
 	.if .Lasm_alt_mode==0
 	.previous
 	.endif
+	.org	. - (664b-663b) + (662b-661b)
+	.org	. - (662b-661b) + (664b-663b)
 .endm
 
 /*
@@ -194,6 +196,11 @@ alternative_endif
 
 #define _ALTERNATIVE_CFG(insn1, insn2, cap, cfg, ...)	\
 	alternative_insn insn1, insn2, cap, IS_ENABLED(cfg)
+
+.macro user_alt, label, oldinstr, newinstr, cond
+9999:	alternative_insn "\oldinstr", "\newinstr", \cond
+	_asm_extable 9999b, \label
+.endm
 
 #endif  /*  __ASSEMBLY__  */
 
