@@ -22,23 +22,17 @@ properties:
     maxItems: 1
 
   interrupts:
-    minItems: 1
-    items:
-      - description: RX interrupt
-      - description: TX interrupt
+    description: RX interrupt
 
   interrupt-names:
-    minItems: 1
-    items:
-      - const: rx
-      - const: tx
+    const: rx
 
 required:
   - reg
   - interrupts
   - interrupt-names
 
-unevaluatedProperties: false
+additionalProperties: false
 
 examples:
   - |
@@ -49,7 +43,6 @@ examples:
         compatible = "brcm,bcm4908-enet";
         reg = <0x80002000 0x1000>;
 
-        interrupts = <GIC_SPI 86 IRQ_TYPE_LEVEL_HIGH>,
-                     <GIC_SPI 87 IRQ_TYPE_LEVEL_HIGH>;
-        interrupt-names = "rx", "tx";
+        interrupts = <GIC_SPI 86 IRQ_TYPE_LEVEL_HIGH>;
+        interrupt-names = "rx";
     };

@@ -46,4 +46,3 @@ parameters, info versions, and other features it supports.
    qed
    ti-cpsw-switch
    am65-nuss-cpsw-switch
-   prestera

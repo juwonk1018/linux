@@ -146,7 +146,7 @@
 			pinctrl-0 = <&fuel_alert_irq>;
 			pinctrl-names = "default";
 			interrupt-parent = <&gpx2>;
-			interrupts = <3 IRQ_TYPE_LEVEL_LOW>;
+			interrupts = <3 IRQ_TYPE_EDGE_FALLING>;
 			maxim,rsns-microohm = <10000>;
 			maxim,over-heat-temp = <600>;
 			maxim,over-volt = <4300>;
@@ -322,10 +322,9 @@
 	max77686: pmic@9 {
 		compatible = "maxim,max77686";
 		interrupt-parent = <&gpx0>;
-		interrupts = <7 IRQ_TYPE_LEVEL_LOW>;
+		interrupts = <7 IRQ_TYPE_NONE>;
 		pinctrl-0 = <&max77686_irq>;
 		pinctrl-names = "default";
-		wakeup-source;
 		reg = <0x09>;
 		#clock-cells = <1>;
 

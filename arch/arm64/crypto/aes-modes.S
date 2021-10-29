@@ -359,7 +359,6 @@ ST5(	mov		v4.16b, vctr.16b		)
 	ins		vctr.d[0], x8
 
 	/* apply carry to N counter blocks for N := x12 */
-	cbz		x12, 2f
 	adr		x16, 1f
 	sub		x16, x16, x12, lsl #3
 	br		x16
@@ -701,7 +700,7 @@ AES_FUNC_START(aes_mac_update)
 	cbz		w5, .Lmacout
 	encrypt_block	v0, w2, x1, x7, w8
 	st1		{v0.16b}, [x4]			/* return dg */
-	cond_yield	.Lmacout, x7, x8
+	cond_yield	.Lmacout, x7
 	b		.Lmacloop4x
 .Lmac1x:
 	add		w3, w3, #4

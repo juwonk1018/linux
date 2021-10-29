@@ -133,10 +133,11 @@ static void clean_dcache_range_nopatch(u64 start, u64 end)
 	} while (cur += d_size, cur < end);
 }
 
-static void __nocfi __apply_alternatives(struct alt_region *region, bool is_module,
+static void __apply_alternatives(void *alt_region,  bool is_module,
 				 unsigned long *feature_mask)
 {
 	struct alt_instr *alt;
+	struct alt_region *region = alt_region;
 	__le32 *origptr, *updptr;
 	alternative_cb_t alt_cb;
 
@@ -181,7 +182,7 @@ static void __nocfi __apply_alternatives(struct alt_region *region, bool is_modu
 	 */
 	if (!is_module) {
 		dsb(ish);
-		icache_inval_all_pou();
+		__flush_icache_all();
 		isb();
 
 		/* Ignore ARM64_CB bit from feature mask */

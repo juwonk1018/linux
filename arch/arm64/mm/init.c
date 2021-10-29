@@ -35,7 +35,6 @@
 #include <asm/fixmap.h>
 #include <asm/kasan.h>
 #include <asm/kernel-pgtable.h>
-#include <asm/kvm_host.h>
 #include <asm/memory.h>
 #include <asm/numa.h>
 #include <asm/sections.h>
@@ -43,7 +42,6 @@
 #include <linux/sizes.h>
 #include <asm/tlb.h>
 #include <asm/alternative.h>
-#include <asm/xen/swiotlb-xen.h>
 
 /*
  * We need to be able to catch inadvertent references to memstart_addr
@@ -219,17 +217,23 @@ static void __init zone_sizes_init(unsigned long min, unsigned long max)
 	free_area_init(max_zone_pfns);
 }
 
-int pfn_is_map_memory(unsigned long pfn)
+int pfn_valid(unsigned long pfn)
 {
-	phys_addr_t addr = PFN_PHYS(pfn);
+	phys_addr_t addr = pfn << PAGE_SHIFT;
 
-	/* avoid false positives for bogus PFNs, see comment in pfn_valid() */
-	if (PHYS_PFN(addr) != pfn)
+	if ((addr >> PAGE_SHIFT) != pfn)
 		return 0;
 
+#ifdef CONFIG_SPARSEMEM
+	if (pfn_to_section_nr(pfn) >= NR_MEM_SECTIONS)
+		return 0;
+
+	if (!valid_section(__pfn_to_section(pfn)))
+		return 0;
+#endif
 	return memblock_is_map_memory(addr);
 }
-EXPORT_SYMBOL(pfn_is_map_memory);
+EXPORT_SYMBOL(pfn_valid);
 
 static phys_addr_t memory_limit = PHYS_ADDR_MAX;
 
@@ -425,8 +429,6 @@ void __init bootmem_init(void)
 
 	dma_pernuma_cma_reserve();
 
-	kvm_hyp_reserve();
-
 	/*
 	 * sparse_init() tries to allocate memory from memblock, so must be
 	 * done after the fixed reservations
@@ -458,13 +460,15 @@ void __init mem_init(void)
 	if (swiotlb_force == SWIOTLB_FORCE ||
 	    max_pfn > PFN_DOWN(arm64_dma_phys_limit))
 		swiotlb_init(1);
-	else if (!xen_swiotlb_detect())
+	else
 		swiotlb_force = SWIOTLB_NO_FORCE;
 
 	set_max_mapnr(max_pfn - PHYS_PFN_OFFSET);
 
 	/* this will put all unused low memory onto the freelists */
 	memblock_free_all();
+
+	mem_init_print_info(NULL);
 
 	/*
 	 * Check boundaries twice: Some fundamental inconsistencies can be
@@ -473,13 +477,6 @@ void __init mem_init(void)
 #ifdef CONFIG_COMPAT
 	BUILD_BUG_ON(TASK_SIZE_32 > DEFAULT_MAP_WINDOW_64);
 #endif
-
-	/*
-	 * Selected page table levels should match when derived from
-	 * scratch using the virtual address range and page size.
-	 */
-	BUILD_BUG_ON(ARM64_HW_PGTABLE_LEVELS(CONFIG_ARM64_VA_BITS) !=
-		     CONFIG_PGTABLE_LEVELS);
 
 	if (PAGE_SIZE >= 16384 && get_num_physpages() <= 128) {
 		extern int sysctl_overcommit_memory;
@@ -501,7 +498,7 @@ void free_initmem(void)
 	 * prevents the region from being reused for kernel modules, which
 	 * is not supported by kallsyms.
 	 */
-	vunmap_range((u64)__init_begin, (u64)__init_end);
+	unmap_kernel_range((u64)__init_begin, (u64)(__init_end - __init_begin));
 }
 
 void dump_mem_limit(void)

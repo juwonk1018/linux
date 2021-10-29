@@ -76,6 +76,8 @@ config CSKY
 	select PERF_USE_VMALLOC if CPU_CK610
 	select RTC_LIB
 	select TIMER_OF
+	select USB_ARCH_HAS_EHCI
+	select USB_ARCH_HAS_OHCI
 	select GENERIC_PCI_IOMAP
 	select HAVE_PCI
 	select PCI_DOMAINS_GENERIC if PCI
@@ -243,6 +245,7 @@ endchoice
 
 menuconfig HAVE_TCM
 	bool "Tightly-Coupled/Sram Memory"
+	select GENERIC_ALLOCATOR
 	help
 	  The implementation are not only used by TCM (Tightly-Coupled Meory)
 	  but also used by sram on SOC bus. It follow existed linux tcm
@@ -311,7 +314,7 @@ config FORCE_MAX_ZONEORDER
 	int "Maximum zone order"
 	default "11"
 
-config DRAM_BASE
+config RAM_BASE
 	hex "DRAM start addr (the same with memory-section in dts)"
 	default 0x0
 
